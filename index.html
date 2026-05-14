@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algebraic Fraction Practice</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f9f7f4;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: .25rem;
+      color: #1a1a1a;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    .wrapper {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 1.2rem;
+    }
+    .tab {
+      padding: 8px 18px;
+      font-size: 13px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: #888;
+      border-bottom: 2.5px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+      transition: color .15s;
+    }
+    .tab.on {
+      color: #1a1a1a;
+      border-bottom-color: #993C1D;
+      font-weight: 600;
+    }
+
+    /* Diff buttons */
+    .diff-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .diff-label { font-size: 12px; color: #888; white-space: nowrap; }
+    .diff {
+      padding: 5px 13px;
+      font-size: 12px;
+      border: 1px solid #ddd;
+      background: transparent;
+      cursor: pointer;
+      color: #888;
+      border-radius: 6px;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .diff.on {
+      background: #f0ede8;
+      color: #1a1a1a;
+      border-color: #bbb;
+      font-weight: 600;
+    }
+
+    /* Score bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .score-box {
+      background: #f0ede8;
+      border-radius: 8px;
+      padding: 8px 14px;
+      text-align: center;
+      min-width: 56px;
+    }
+    .score-box .label { font-size: 11px; color: #888; }
+    .score-box .val { font-size: 18px; font-weight: 600; }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border: 1px solid #e0dbd3;
+      border-radius: 12px;
+      padding: 2rem;
+    }
+
+    #inst {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    /* Fraction display */
+    .eq-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: .8rem;
+      flex-wrap: wrap;
+    }
+    .frac-display {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 80px;
+    }
+    .frac-display .fn, .frac-display .fd {
+      font-size: 1.7rem;
+      font-family: Georgia, "Times New Roman", serif;
+      padding: 0 10px 4px;
+      color: #1a1a1a;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .frac-display .fd { padding: 4px 10px 0; }
+    .frac-line { height: 2px; background: #1a1a1a; width: 100%; margin: 2px 0; }
+    .eq-sign {
+      font-size: 2rem;
+      color: #888;
+      font-family: Georgia, serif;
+    }
+
+    /* Answer inputs */
+    .frac-input {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 170px;
+    }
+    .finp {
+      font-size: 1.3rem;
+      font-family: Georgia, "Times New Roman", serif;
+      width: 170px;
+      border: none;
+      background: transparent;
+      outline: none;
+      color: #1a1a1a;
+      padding: 4px 8px;
+      text-align: center;
+      display: block;
+      border-bottom: 1.5px dashed #bbb;
+      transition: border-color .15s;
+    }
+    .finp:focus { border-bottom-style: solid; border-bottom-color: #993C1D; }
+    .finp::placeholder { color: #bbb; font-size: 1rem; }
+
+    .hint-text {
+      font-size: 11.5px;
+      color: #999;
+      text-align: center;
+      margin: 0 0 1.5rem;
+    }
+    .hint-text code {
+      font-size: 11px;
+      background: #f0ede8;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+
+    /* Found rewrites */
+    #fsec {
+      display: none;
+      margin-bottom: 1.2rem;
+      padding: 12px 14px;
+      background: #f7f5f1;
+      border-radius: 8px;
+    }
+    #fsec .fsec-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: #f0ede8;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+      margin: 3px;
+      color: #1a1a1a;
+      vertical-align: middle;
+    }
+    .chip.ok { border-color: #993C1D; }
+    .chip-simp { font-size: 11px; color: #993C1D; }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button.primary {
+      padding: 8px 20px;
+      font-size: 13px;
+      cursor: pointer;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-family: inherit;
+      font-weight: 500;
+      transition: background .15s;
+    }
+    button.primary:hover { background: #333; }
+    button.secondary {
+      padding: 8px 18px;
+      font-size: 13px;
+      cursor: pointer;
+      background: transparent;
+      color: #666;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    button.secondary:hover { background: #f0ede8; color: #1a1a1a; }
+
+    /* Feedback */
+    #fb {
+      display: none;
+      margin-top: 10px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    #fb.correct { background: #edf7ed; color: #2a6b2a; border: 1px solid #b0d9b0; }
+    #fb.error   { background: #fdecea; color: #8b1a1a; border: 1px solid #e8b0a8; }
+    #fb.info    { background: #eef3fa; color: #1a3a6b; border: 1px solid #a8c0e8; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <h1>Algebraic Fraction Practice</h1>
+  <p class="subtitle">Rewrite fractions in as many equivalent forms as you can — get instant feedback each time.</p>
+
+  <div class="tabs">
+    <button class="tab on" id="t-simplify" onclick="setMode('simplify')">Simplify</button>
+    <button class="tab" id="t-explore" onclick="setMode('explore')">Explore forms</button>
+  </div>
+
+  <div class="top-bar">
+    <div class="diff-row">
+      <span class="diff-label">variables:</span>
+      <button class="diff" id="d-1" onclick="setDiff(1)">x</button>
+      <button class="diff on" id="d-2" onclick="setDiff(2)">x, y</button>
+      <button class="diff" id="d-3" onclick="setDiff(3)">x, y, z</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <div class="score-box">
+        <div class="label">score</div>
+        <div class="val" id="sc">0</div>
+      </div>
+      <div class="score-box">
+        <div class="label">streak</div>
+        <div class="val" id="st">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p id="inst"></p>
+
+    <div class="eq-row">
+      <div class="frac-display">
+        <span class="fn" id="qn"></span>
+        <div class="frac-line"></div>
+        <span class="fd" id="qd"></span>
+      </div>
+      <span class="eq-sign">=</span>
+      <div class="frac-input">
+        <input class="finp" id="in" type="text" placeholder="numerator"
+          autocomplete="off" autocorrect="off" spellcheck="false"
+          onkeydown="if(event.key==='Tab'){event.preventDefault();document.getElementById('id').focus();}else if(event.key==='Enter'){chk();}"/>
+        <div class="frac-line" style="width:170px;margin:3px 0;"></div>
+        <input class="finp" id="id" type="text" placeholder="denominator"
+          autocomplete="off" autocorrect="off" spellcheck="false"
+          onkeydown="if(event.key==='Enter'){chk();}"/>
+      </div>
+    </div>
+
+    <p class="hint-text">
+      examples: <code>3x + 2</code> &nbsp;·&nbsp; <code>x^2 − 4x</code> &nbsp;·&nbsp;
+      <code>2xy + y^2</code> &nbsp;·&nbsp; Tab moves between fields, Enter to check
+    </p>
+
+    <div id="fsec">
+      <p class="fsec-label">rewrites found:</p>
+      <div id="fl"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" onclick="chk()">Check ↗</button>
+      <button class="secondary" onclick="nxtQ()">New question</button>
+      <button class="secondary" id="hbtn" onclick="hint()">Hint</button>
+      <button class="secondary" onclick="showA()">Show answer</button>
+    </div>
+  </div>
+
+  <div id="fb"></div>
+</div>
+
+<script>
+let mode='simplify', nv=2, Q=null, score=0, streak=0, found=[];
+
+const gcd=(a,b)=>b===0?Math.abs(a):gcd(b,a%b);
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const M=(c,x=0,y=0,z=0)=>({coeff:c,x,y,z});
+const clr=p=>p.filter(t=>t.coeff!==0);
+
+function srtP(p){
+  return[...p].sort((a,b)=>{
+    const da=(a.x||0)+(a.y||0)+(a.z||0),db=(b.x||0)+(b.y||0)+(b.z||0);
+    if(da!==db)return db-da;
+    if((a.x||0)!==(b.x||0))return(b.x||0)-(a.x||0);
+    return(b.y||0)-(a.y||0);
+  });
+}
+
+function mS(m,h=false){
+  const c=m.coeff||1;
+  let v='';
+  for(const k of['x','y','z']){
+    const p=m[k]||0;
+    if(p===1)v+=k;
+    else if(p>=2)v+=h?`${k}<sup>${p}</sup>`:`${k}${p===2?'²':'^'+p}`;
+  }
+  if(!v)return String(c);
+  return c===1?v:String(c)+v;
+}
+
+function pH(poly,h=false){
+  if(!poly||!poly.length)return'0';
+  const sp=srtP(clr(poly));
+  if(!sp.length)return'0';
+  let s='',first=true;
+  for(const t of sp){
+    const a={...t,coeff:Math.abs(t.coeff)},ts=mS(a,h);
+    if(first){s+=(t.coeff<0?'−':'')+ts;first=false;}
+    else s+=(t.coeff<0?' − ':' + ')+ts;
+  }
+  return s||'0';
+}
+
+function pF(poly,h=false){
+  const s=pH(poly,h);
+  return clr(poly).length>1?`(${s})`:s;
+}
+
+const TV=[{x:1.7,y:2.9,z:3.7},{x:4.1,y:5.3,z:7.1},{x:2.3,y:7.1,z:5.7},{x:6.3,y:3.3,z:11.3}];
+const eM=(m,v)=>(m.coeff||1)*Math.pow(v.x,m.x||0)*Math.pow(v.y,m.y||0)*Math.pow(v.z,m.z||0);
+const eP=(poly,v)=>poly.reduce((s,t)=>s+eM(t,v),0);
+
+function polyEq(n1,d1,n2,d2){
+  let ok=0;
+  for(const v of TV){
+    const e1=eP(d1,v),e2=eP(d2,v);
+    if(Math.abs(e1)<1e-8||Math.abs(e2)<1e-8)continue;
+    if(Math.abs(eP(n1,v)/e1-eP(n2,v)/e2)/(Math.abs(eP(n1,v)/e1)+1e-8)>1e-5)return false;
+    ok++;
+  }
+  return ok>0;
+}
+
+function mGCD(poly){
+  if(!poly||!poly.length)return M(1);
+  let g=0,mx=99,my=99,mz=99;
+  for(const t of poly){g=gcd(g,Math.abs(t.coeff||1));mx=Math.min(mx,t.x||0);my=Math.min(my,t.y||0);mz=Math.min(mz,t.z||0);}
+  return M(g||1,mx===99?0:mx,my===99?0:my,mz===99?0:mz);
+}
+
+function cFac(np,dp){
+  const ng=mGCD(np),dg=mGCD(dp);
+  return M(gcd(ng.coeff,dg.coeff),Math.min(ng.x,dg.x),Math.min(ng.y,dg.y),Math.min(ng.z,dg.z));
+}
+
+function isSmp(np,dp){const c=cFac(np,dp);return c.coeff===1&&c.x===0&&c.y===0&&c.z===0;}
+
+function parseMono(s){
+  if(!s)return null;
+  s=s.toLowerCase().replace(/[×*·]/g,'').replace(/²/g,'^2').replace(/([xyz])(\d)/g,'$1^$2');
+  const cm=s.match(/^(\d+)/);
+  const coeff=cm?parseInt(cm[1]):1;
+  const rest=s.slice(cm?cm[1].length:0);
+  const r={coeff,x:0,y:0,z:0};
+  for(const k of['x','y','z']){const m=rest.match(new RegExp(k+'(?:\\^(\\d+))?'));if(m)r[k]=m[1]?parseInt(m[1]):1;}
+  return r;
+}
+
+function parsePoly(s){
+  if(!s||!s.trim())return null;
+  s=s.trim().toLowerCase().replace(/\s+/g,'').replace(/[×*·]/g,'').replace(/²/g,'^2').replace(/−/g,'-').replace(/[()]/g,'').replace(/([xyz])(\d)/g,'$1^$2');
+  if(s==='0')return null;
+  if(!s.startsWith('-'))s='+'+s;
+  const parts=s.match(/[+-][^+-]*/g)||[];
+  const terms=[];
+  for(const raw of parts){
+    if(!raw||raw==='-'||raw==='+')continue;
+    const neg=raw[0]==='-',body=raw.slice(1);
+    if(!body)continue;
+    const m=parseMono(body);
+    if(!m)return null;
+    if(neg)m.coeff=-m.coeff;
+    terms.push(m);
+  }
+  return terms.length>0?terms:null;
+}
+
+function genQ(){
+  const types=nv>=2?[1,2,3,4,5,6]:[1,2,3];
+  const type=types[Math.floor(Math.random()*types.length)];
+  if(type===1){
+    let a1,a0,d;
+    do{a1=ri(1,4);a0=ri(-3,4);if(!a0)a0=ri(1,3);d=ri(2,5);}while(gcd(gcd(a1,Math.abs(a0)),d)>1);
+    const k=ri(2,4);
+    return{qn:clr([M(k*a1,1),M(k*a0)]),qd:clr([M(k*d)]),sn:clr([M(a1,1),M(a0)]),sd:clr([M(d)])};
+  }
+  if(type===2){
+    let b1,b0,c;
+    do{b1=ri(1,4);b0=ri(-3,4);if(!b0)b0=ri(1,3);c=ri(1,5);}while(gcd(gcd(b1,Math.abs(b0)),c)>1);
+    const k=ri(2,4);
+    return{qn:clr([M(k*c)]),qd:clr([M(k*b1,1),M(k*b0)]),sn:clr([M(c)]),sd:clr([M(b1,1),M(b0)])};
+  }
+  if(type===3){
+    let a1,a0,b;
+    do{a1=ri(1,4);a0=ri(-3,4);if(!a0)a0=ri(1,3);b=ri(1,4);}while(gcd(gcd(a1,Math.abs(a0)),b)>1);
+    const k=ri(2,3);
+    return{qn:clr([M(k*a1,2),M(k*a0,1)]),qd:clr([M(k*b,1)]),sn:clr([M(a1,1),M(a0)]),sd:clr([M(b)])};
+  }
+  if(type===4){
+    let a1,a0,d;
+    do{a1=ri(1,3);a0=ri(-2,3);if(!a0)a0=ri(1,2);d=ri(2,4);}while(gcd(gcd(a1,Math.abs(a0)),d)>1);
+    const k=ri(2,3);
+    return{qn:clr([M(k*a1,1,0),M(k*a0,0,1)]),qd:clr([M(k*d)]),sn:clr([M(a1,1),M(a0,0,1)]),sd:clr([M(d)])};
+  }
+  if(type===5){
+    let a1,a0,b;
+    do{a1=ri(1,3);a0=ri(-2,3);if(!a0)a0=ri(1,2);b=ri(1,3);}while(gcd(gcd(a1,Math.abs(a0)),b)>1);
+    const k=ri(2,3);
+    return{qn:clr([M(k*a1,1,1),M(k*a0,0,2)]),qd:clr([M(k*b,0,1)]),sn:clr([M(a1,1),M(a0,0,1)]),sd:clr([M(b)])};
+  }
+  if(type===6){
+    let a1,a0,b;
+    do{a1=ri(1,3);a0=ri(-2,3);if(!a0)a0=ri(1,2);b=ri(1,3);}while(gcd(gcd(a1,Math.abs(a0)),b)>1);
+    const k=ri(2,3);
+    return{qn:clr([M(k*a1,2,0),M(k*a0,1,1)]),qd:clr([M(k*b,1,0)]),sn:clr([M(a1,1),M(a0,0,1)]),sd:clr([M(b)])};
+  }
+}
+
+function setMode(m){
+  mode=m;
+  ['simplify','explore'].forEach(id=>document.getElementById('t-'+id).className='tab'+(id===m?' on':''));
+  document.getElementById('hbtn').style.display=m==='simplify'?'inline-block':'none';
+  nxtQ();
+}
+
+function setDiff(n){
+  nv=n;
+  [1,2,3].forEach(i=>document.getElementById('d-'+i).className='diff'+(i===n?' on':''));
+  nxtQ();
+}
+
+function nxtQ(){
+  found=[];
+  document.getElementById('fl').innerHTML='';
+  document.getElementById('fsec').style.display='none';
+  Q=genQ();
+  document.getElementById('qn').innerHTML=pH(Q.qn,true);
+  document.getElementById('qd').innerHTML=pH(Q.qd,true);
+  document.getElementById('inst').textContent=mode==='simplify'
+    ?'Rewrite this fraction step by step — enter intermediate forms and work towards the fully simplified result.'
+    :'Enter as many different equivalent forms of this fraction as you can. Each will be checked and logged.';
+  document.getElementById('in').value='';
+  document.getElementById('id').value='';
+  hideFb();
+  setTimeout(()=>document.getElementById('in').focus(),60);
+}
+
+function addChip(n,d,simp){
+  const chip=document.createElement('span');
+  chip.className='chip'+(simp?' ok':'');
+  const frac=document.createElement('span');
+  frac.style.cssText='display:inline-flex;flex-direction:column;align-items:center;font-family:Georgia,serif;line-height:1.2;';
+  frac.innerHTML=`<span style="font-size:.9rem;padding:0 4px 2px;white-space:nowrap;">${pH(n,true)}</span><div style="height:1.5px;background:currentColor;width:100%;"></div><span style="font-size:.9rem;padding:2px 4px 0;white-space:nowrap;">${pH(d,true)}</span>`;
+  chip.appendChild(frac);
+  if(simp){const lb=document.createElement('span');lb.className='chip-simp';lb.textContent='simplified';chip.appendChild(lb);}
+  document.getElementById('fl').appendChild(chip);
+  document.getElementById('fsec').style.display='block';
+}
+
+function showFb(msg,type){
+  const el=document.getElementById('fb');
+  el.className=type;
+  el.style.display='block';
+  el.innerHTML=msg;
+}
+function hideFb(){const el=document.getElementById('fb');el.style.display='none';el.className='';}
+function upd(){document.getElementById('sc').textContent=score;document.getElementById('st').textContent=streak;}
+
+function chk(){
+  if(!Q)return;
+  const nRaw=document.getElementById('in').value.trim();
+  const dRaw=document.getElementById('id').value.trim()||'1';
+  if(!nRaw){showFb('Please enter the numerator.','info');return;}
+  const un=parsePoly(nRaw),ud=parsePoly(dRaw);
+  if(!un||!ud){showFb('Couldn\'t parse that. Try: <code>3x + 2</code>, <code>x^2 − 4x</code>, or <code>2xy + y^2</code>.','info');return;}
+  if(!polyEq(un,ud,Q.qn,Q.qd)){
+    showFb(`<strong>${pF(un,true)} / ${pF(ud,true)}</strong> is not equivalent to the question. Check your algebra.`,'error');
+    streak=0;upd();return;
+  }
+  if(pH(un)===pH(Q.qn)&&pH(ud)===pH(Q.qd)){
+    showFb('That is the original fraction — try rewriting it in a different form.','info');return;
+  }
+  if(found.some(([fn,fd])=>pH(fn)===pH(un)&&pH(fd)===pH(ud))){
+    showFb(`<strong>${pF(un,true)} / ${pF(ud,true)}</strong> is already logged. Try another form.`,'info');return;
+  }
+  const sim=isSmp(un,ud);
+  found.push([un,ud]);
+  addChip(un,ud,sim);
+  score++;streak++;upd();
+  if(mode==='simplify'){
+    if(sim){
+      showFb(`Fully simplified! <strong>${pF(Q.qn,true)} / ${pF(Q.qd,true)} = ${pF(un,true)} / ${pF(ud,true)}</strong>. Press "New question" to continue.`,'correct');
+    } else {
+      const c=cFac(un,ud);
+      showFb(`<strong>${pF(un,true)} / ${pF(ud,true)}</strong> is equivalent — but still reducible. There is a common factor of <strong>${mS(c,true)}</strong> to cancel.`,'info');
+    }
+  } else {
+    let msg=`<strong>${pF(un,true)} / ${pF(ud,true)}</strong> is correct!`;
+    if(sim)msg+=' This is the fully simplified form.';
+    msg+=` ${found.length} form${found.length!==1?'s':''} found.`;
+    showFb(msg,'correct');
+  }
+  document.getElementById('in').value='';
+  document.getElementById('id').value='';
+  document.getElementById('in').focus();
+}
+
+function hint(){
+  if(!Q)return;
+  const c=cFac(Q.qn,Q.qd);
+  showFb(`Hint: the numerator and denominator share a common factor of <strong>${mS(c,true)}</strong>. Divide both by it.`,'info');
+}
+
+function showA(){
+  if(!Q)return;
+  streak=0;upd();
+  showFb(`The fully simplified form is <strong>${pF(Q.sn,true)} / ${pF(Q.sd,true)}</strong>.`,'info');
+}
+
+setMode('simplify');
+</script>
+</body>
+</html>
