@@ -57,6 +57,7 @@ body {
 .afp-trial .mark{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;}
 .afp-trial.correct{border-color:#2f8f46;background:#e7f6ea;color:#145725;}
 .afp-trial.wrong{border-color:#b84d4d;background:#fde8e8;color:#7a1f1f;}
+.afp-trial.answer{border-color:#4a90c2;background:#e8f3fb;color:#164b73;}
 </style>
 </head>
 <body>
@@ -127,9 +128,37 @@ body {
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 1.25rem;justify-content:center;">
     <button class="afp-btn primary" onclick="afp_check()">Check</button>
     <button class="afp-btn secondary" onclick="afp_nxtQ()">New question</button>
+    <button class="afp-btn secondary" onclick="afp_toggleOwnProblem()">Insert own problem</button>
     <button class="afp-btn secondary" onclick="afp_resetInput()">Reset input</button>
     <button class="afp-btn tertiary" onclick="afp_hint()" id="afp-hbtn">Hint</button>
     <button class="afp-btn tertiary" onclick="afp_showA()">Correct answer</button>
+  </div>
+
+  <!-- Own problem panel -->
+  <div id="afp-own-panel" style="display:none;margin:0 0 1.25rem;padding:14px;background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;">
+    <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">insert your own problem:</p>
+    <div class="afp-editor" id="afp-own-input" contenteditable="true" data-placeholder="type the starting expression, e.g. (4x+8)/4 or (x+1)/(x-1)"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="afp-sym" onclick="afp_insertFrac()" title="Insert fraction">
+        <span class="afp-frac"><span class="num">a</span><span class="bar"></span><span class="den">b</span></span>
+      </button>
+      <button class="afp-sym" onclick="afp_insertSym('^2')" title="Square (power of 2)"><i>x</i><sup style="font-size:.7em;">2</sup></button>
+      <button class="afp-sym" onclick="afp_insertSym('*')" title="Multiply">×</button>
+      <button class="afp-sym" onclick="afp_insertSym('/')" title="Divide">/</button>
+      <button class="afp-sym" onclick="afp_insertSym('+')" title="Plus">+</button>
+      <button class="afp-sym" onclick="afp_insertSym('-')" title="Minus">−</button>
+      <button class="afp-sym" onclick="afp_insertSym('(')" title="Open parenthesis">(</button>
+      <button class="afp-sym" onclick="afp_insertSym(')')" title="Close parenthesis">)</button>
+      <button class="afp-sym" onclick="afp_insertSym('x')" title="x"><i>x</i></button>
+      <button class="afp-sym" onclick="afp_insertSym('y')" title="y"><i>y</i></button>
+      <button class="afp-sym" onclick="afp_insertSym('z')" title="z"><i>z</i></button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <button class="afp-btn primary" onclick="afp_setOwnProblem()">Use this problem</button>
+      <button class="afp-btn secondary" onclick="afp_clearOwnProblem()">Clear</button>
+      <button class="afp-btn tertiary" onclick="afp_toggleOwnProblem(false)">Close</button>
+    </div>
+    <p id="afp-own-error" style="display:none;font-size:12px;color:#7a1f1f;margin:10px 0 0;"></p>
   </div>
 
   <!-- Question card -->
@@ -146,6 +175,7 @@ body {
     </button>
     <button class="afp-sym" onclick="afp_insertSym('^2')" title="Square (power of 2)"><i>x</i><sup style="font-size:.7em;">2</sup></button>
     <button class="afp-sym" onclick="afp_insertSym('*')" title="Multiply">×</button>
+    <button class="afp-sym" onclick="afp_insertSym('/')" title="Divide">/</button>
     <button class="afp-sym" onclick="afp_insertSym('+')" title="Plus">+</button>
     <button class="afp-sym" onclick="afp_insertSym('-')" title="Minus">−</button>
     <button class="afp-sym" onclick="afp_insertSym('(')" title="Open parenthesis">(</button>
@@ -206,6 +236,7 @@ function evalE(e,v){
     if(e.op==='+') return a+b;
     if(e.op==='-') return a-b;
     if(e.op==='*') return a*b;
+    if(e.op==='/') return Math.abs(b) < 1e-12 ? NaN : a/b;
   }
   if(e.t==='N') return -evalE(e.a, v);
   return 0;
@@ -299,6 +330,7 @@ function normalize(e){
     if(e.op==='+') return addNorm(a, b);
     if(e.op==='-') return addNorm(a, isPoly(b) ? polyNeg(b) : Frac(polyNeg(b.n), b.d));
     if(e.op==='*') return mulNorm(a, b);
+    if(e.op==='/') return divNorm(a, b);
   }
   return e;
 }
@@ -393,6 +425,8 @@ function renderE(e, ctx='top'){
     let inner;
     if(e.op==='*'){
       inner = renderE(e.a,'mul') + ' · ' + renderE(e.b,'mul');
+    } else if(e.op==='/'){
+      inner = renderE(e.a,'mul') + ' / ' + renderE(e.b,'mul');
     } else if(e.op==='+'){
       inner = renderE(e.a,'top') + ' + ' + renderE(e.b,'top');
     } else {
@@ -732,7 +766,8 @@ function genQ(nv){
     let dx = vB[0], dy = vB[1], dz = vB[2];
     const mx = Math.min(nx,dx), my = Math.min(ny,dy), mz = Math.min(nz,dz);
     nx-=mx; ny-=my; nz-=mz; dx-=mx; dy-=my; dz-=mz;
-    return { q: Frac(f1, f2), s: Frac(Mono(nc, nx, ny, nz), Mono(dc, dx, dy, dz)) };
+    // Render division of two fractions with / instead of a stacked fraction over a stacked fraction.
+    return { q: {t:'O', op:'/', a:f1, b:f2}, s: Frac(Mono(nc, nx, ny, nz), Mono(dc, dx, dy, dz)) };
   }
   if(type === 'complex'){
     // ((a x + b) / c) / d   or   a / ((b x + c) / d)
@@ -857,12 +892,24 @@ function placeCaretAtEnd(el){
   sel.removeAllRanges();
   sel.addRange(range);
 }
+function activeEditor(){
+  const sel = window.getSelection();
+  if(sel && sel.rangeCount){
+    let node = sel.getRangeAt(0).commonAncestorContainer;
+    if(node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    const editor = node && node.closest ? node.closest('#afp-input, #afp-own-input') : null;
+    if(editor) return editor;
+  }
+  return document.activeElement && document.activeElement.closest
+    ? (document.activeElement.closest('#afp-input, #afp-own-input') || document.getElementById('afp-input'))
+    : document.getElementById('afp-input');
+}
 function insertNodeAtCaret(node){
-  const editor = document.getElementById('afp-input');
+  const editor = activeEditor();
   editor.focus();
   const sel = window.getSelection();
   let range;
-  if(sel.rangeCount){
+  if(sel.rangeCount && editor.contains(sel.getRangeAt(0).commonAncestorContainer)){
     range = sel.getRangeAt(0);
   } else {
     range = document.createRange();
@@ -900,7 +947,7 @@ function insertFrac(){
   }, 0);
 }
 function insertSym(sym){
-  const editor = document.getElementById('afp-input');
+  const editor = activeEditor();
   editor.focus();
   document.execCommand('insertText', false, sym);
 }
@@ -908,7 +955,7 @@ function addTrial(exprHtml, ok, label){
   const box = document.getElementById('afp-trials');
   const list = document.getElementById('afp-trial-list');
   const row = document.createElement('div');
-  row.className = 'afp-trial ' + (ok ? 'correct' : 'wrong');
+  row.className = 'afp-trial ' + (label === 'correct answer' ? 'answer' : (ok ? 'correct' : 'wrong'));
   row.innerHTML = '<span class="afp-math" style="font-size:1.1rem;">' + exprHtml + '</span><span class="mark">' + label + '</span>';
   list.appendChild(row);
   box.style.display = 'block';
@@ -972,10 +1019,59 @@ function escapeHtml(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+
+function toggleOwnProblem(force){
+  const panel = document.getElementById('afp-own-panel');
+  const show = typeof force === 'boolean' ? force : panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  if(show){
+    document.getElementById('afp-own-error').style.display = 'none';
+    setTimeout(() => document.getElementById('afp-own-input').focus(), 30);
+  }
+}
+function clearOwnProblem(){
+  document.getElementById('afp-own-input').innerHTML = '';
+  const err = document.getElementById('afp-own-error');
+  err.style.display = 'none';
+  document.getElementById('afp-own-input').focus();
+}
+function ownProblemRaw(){
+  return editorTextFromNode(document.getElementById('afp-own-input')).replace(/\u00a0/g,' ').trim();
+}
+function setOwnProblem(){
+  const raw = ownProblemRaw();
+  const err = document.getElementById('afp-own-error');
+  if(!raw){
+    err.textContent = 'Please type an expression first.';
+    err.style.display = 'block';
+    return;
+  }
+  const parsed = parseInput(raw);
+  if(!parsed){
+    err.textContent = 'I could not parse this expression. Try typing directly, using /, or using the fraction button.';
+    err.style.display = 'block';
+    return;
+  }
+  const simplifiedCandidate = normalize(parsed);
+  Q = { q: parsed, s: simplifiedCandidate || parsed, own: true };
+  found = [];
+  document.getElementById('afp-q').innerHTML = '<span class="afp-math">' + renderE(Q.q) + '</span>';
+  document.getElementById('afp-inst').textContent = 'Own problem: rewrite this expression in an equivalent form.';
+  clearEditor();
+  document.getElementById('afp-trial-list').innerHTML = '';
+  document.getElementById('afp-trials').style.display = 'none';
+  err.style.display = 'none';
+  toggleOwnProblem(false);
+  setTimeout(() => document.getElementById('afp-input').focus(), 60);
+}
+
 // expose globals
 window.afp_setMode = setMode;
 window.afp_setDiff = setDiff;
 window.afp_nxtQ = nxtQ;
+window.afp_toggleOwnProblem = toggleOwnProblem;
+window.afp_clearOwnProblem = clearOwnProblem;
+window.afp_setOwnProblem = setOwnProblem;
 window.afp_check = check;
 window.afp_hint = hint;
 window.afp_showA = showA;
