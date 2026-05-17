@@ -99,19 +99,6 @@ body {
 
 <div style="padding:1rem 0;max-width:980px;margin:0 auto;">
 
-<div style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:1.5rem;">
-  <div style="display:flex;gap:8px;">
-    <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 14px;text-align:center;min-width:52px;">
-      <div style="font-size:11px;color:var(--color-text-secondary);">score</div>
-      <div style="font-size:18px;font-weight:500;" id="afp-sc">0</div>
-    </div>
-    <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 14px;text-align:center;min-width:52px;">
-      <div style="font-size:11px;color:var(--color-text-secondary);">streak</div>
-      <div style="font-size:18px;font-weight:500;" id="afp-st">0</div>
-    </div>
-  </div>
-</div>
-
 <div style="background:var(--color-background-secondary);border-radius:14px;padding:1.5rem;">
   <p id="afp-inst" style="font-size:13px;color:var(--color-text-secondary);margin:0 0 1.25rem;line-height:1.5;text-align:center;"></p>
 
@@ -120,7 +107,6 @@ body {
     <button class="afp-btn primary" onclick="afp_check()">Check</button>
     <button class="afp-btn secondary" onclick="afp_nxtQ()">New question</button>
     <button class="afp-btn secondary" onclick="afp_toggleOwnProblem()">Insert own problem</button>
-    <button class="afp-btn secondary" onclick="afp_resetInput()">Reset input</button>
     <button class="afp-btn tertiary" onclick="afp_hint()" id="afp-hbtn">Hint</button>
     <button class="afp-btn tertiary" onclick="afp_showA()">Correct answer</button>
   </div>
@@ -151,10 +137,10 @@ body {
     <p id="afp-own-error" style="display:none;font-size:12px;color:#7a1f1f;margin:10px 0 0;"></p>
   </div>
 
-  <div class="afp-workspace" style="display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,1fr);gap:16px;align-items:stretch;margin-bottom:1rem;">
+  <div class="afp-workspace" style="display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,1fr);gap:16px;align-items:start;margin-bottom:1rem;">
     <div>
       <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">problem</p>
-      <div id="afp-q" class="afp-qcard" style="height:100%;min-height:160px;"></div>
+      <div id="afp-q" class="afp-qcard" style="height:auto;min-height:160px;overflow-wrap:anywhere;"></div>
     </div>
     <div>
       <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">your rewrite</p>
@@ -164,7 +150,7 @@ body {
   </div>
 
   <!-- Symbol insert buttons -->
-  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+  <div id="afp-symbol-row" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;">
     <button class="afp-sym" onclick="afp_insertFrac()" title="Insert fraction">
       <span class="afp-frac"><span class="num">a</span><span class="bar"></span><span class="den">b</span></span>
     </button>
@@ -177,7 +163,18 @@ body {
     <button class="afp-sym" onclick="afp_insertSym(')')" title="Close parenthesis">)</button>
     <button class="afp-sym" id="afp-vx" onclick="afp_insertSym('x')" title="x"><i>x</i></button>
     <button class="afp-sym" id="afp-vy" onclick="afp_insertSym('y')" title="y"><i>y</i></button>
+    <button class="afp-btn secondary" onclick="afp_resetInput()" style="height:46px;">Reset input</button>
   </div>
+
+  <script>
+  (function(){
+    const row = document.getElementById('afp-symbol-row');
+    const input = document.getElementById('afp-input');
+    if(row && input && input.parentElement){
+      input.parentElement.appendChild(row);
+    }
+  })();
+  </script>
 
   <!-- Live preview -->
   <div id="afp-preview-row" style="display:none!important;margin-top:12px;padding:10px 14px;background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;font-size:13px;color:var(--color-text-secondary);min-height:36px;">
@@ -834,10 +831,7 @@ function validQ(q){
 }
 function showFb(msg, type){ /* Feedback is now shown in the trial list only. */ }
 function hideFb(){ /* No separate bottom feedback area. */ }
-function upd(){
-  document.getElementById('afp-sc').textContent = score;
-  document.getElementById('afp-st').textContent = streak;
-}
+function upd(){ /* score and streak counters removed from the interface. */ }
 
 function editorTextFromNode(node){
   if(node.nodeType === Node.TEXT_NODE) return node.nodeValue;
