@@ -58,6 +58,8 @@ body {
 .afp-trial.correct{border-color:#2f8f46;background:#e7f6ea;color:#145725;}
 .afp-trial.wrong{border-color:#b84d4d;background:#fde8e8;color:#7a1f1f;}
 .afp-trial.answer{border-color:#4a90c2;background:#e8f3fb;color:#164b73;}
+
+@media (max-width:760px){.afp-workspace{grid-template-columns:1fr!important;}}
 </style>
 </head>
 <body>
@@ -95,20 +97,9 @@ body {
 .afp-btn.tertiary:hover{color:var(--color-text-primary);background:var(--color-background-secondary);}
 </style>
 
-<div style="padding:1rem 0;max-width:680px;margin:0 auto;">
+<div style="padding:1rem 0;max-width:980px;margin:0 auto;">
 
-<div style="display:flex;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.2rem;">
-  <button class="afp-tab on" id="afp-t-simplify" onclick="afp_setMode('simplify')">Simplify</button>
-  <button class="afp-tab" id="afp-t-explore" onclick="afp_setMode('explore')">Explore forms</button>
-</div>
-
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.5rem;">
-  <div style="display:flex;gap:6px;align-items:center;">
-    <span style="font-size:12px;color:var(--color-text-secondary);white-space:nowrap;">variables:</span>
-    <button class="afp-diff" id="afp-d-1" onclick="afp_setDiff(1)"><i>x</i></button>
-    <button class="afp-diff on" id="afp-d-2" onclick="afp_setDiff(2)"><i>x</i>,&nbsp;<i>y</i></button>
-    <button class="afp-diff" id="afp-d-3" onclick="afp_setDiff(3)"><i>x</i>,&nbsp;<i>y</i>,&nbsp;<i>z</i></button>
-  </div>
+<div style="display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:1.5rem;">
   <div style="display:flex;gap:8px;">
     <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 14px;text-align:center;min-width:52px;">
       <div style="font-size:11px;color:var(--color-text-secondary);">score</div>
@@ -151,7 +142,6 @@ body {
       <button class="afp-sym" onclick="afp_insertSym(')')" title="Close parenthesis">)</button>
       <button class="afp-sym" onclick="afp_insertSym('x')" title="x"><i>x</i></button>
       <button class="afp-sym" onclick="afp_insertSym('y')" title="y"><i>y</i></button>
-      <button class="afp-sym" onclick="afp_insertSym('z')" title="z"><i>z</i></button>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
       <button class="afp-btn primary" onclick="afp_setOwnProblem()">Use this problem</button>
@@ -161,12 +151,17 @@ body {
     <p id="afp-own-error" style="display:none;font-size:12px;color:#7a1f1f;margin:10px 0 0;"></p>
   </div>
 
-  <!-- Question card -->
-  <div id="afp-q" class="afp-qcard" style="margin-bottom:1.25rem;"></div>
-
-  <!-- Math editor: one editable area that renders fractions directly where you type -->
-  <div class="afp-editor" id="afp-input" contenteditable="true" data-placeholder="enter your equivalent form"
-    spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();afp_check();}" oninput="afp_updatePreview()"></div>
+  <div class="afp-workspace" style="display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,1fr);gap:16px;align-items:stretch;margin-bottom:1rem;">
+    <div>
+      <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">problem</p>
+      <div id="afp-q" class="afp-qcard" style="height:100%;min-height:160px;"></div>
+    </div>
+    <div>
+      <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">your rewrite</p>
+      <div class="afp-editor" id="afp-input" contenteditable="true" data-placeholder="enter your equivalent form"
+        spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();afp_check();}" oninput="afp_updatePreview()" style="min-height:160px;"></div>
+    </div>
+  </div>
 
   <!-- Symbol insert buttons -->
   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
@@ -182,7 +177,6 @@ body {
     <button class="afp-sym" onclick="afp_insertSym(')')" title="Close parenthesis">)</button>
     <button class="afp-sym" id="afp-vx" onclick="afp_insertSym('x')" title="x"><i>x</i></button>
     <button class="afp-sym" id="afp-vy" onclick="afp_insertSym('y')" title="y"><i>y</i></button>
-    <button class="afp-sym" id="afp-vz" onclick="afp_insertSym('z')" title="z"><i>z</i></button>
   </div>
 
   <!-- Live preview -->
@@ -805,7 +799,7 @@ function genQ(nv){
 }
 
 // === state ===
-let mode = 'simplify';
+let mode = 'explore';
 let nv = 2;
 let Q = null;
 let score = 0, streak = 0;
@@ -813,21 +807,11 @@ let found = [];
 
 // === UI ===
 function setMode(m){
-  mode = m;
-  ['simplify','explore'].forEach(id => {
-    document.getElementById('afp-t-'+id).className = 'afp-tab' + (id===m ? ' on' : '');
-  });
-  document.getElementById('afp-hbtn').style.display = m==='simplify' ? 'inline-block' : 'none';
+  mode = 'explore';
   nxtQ();
 }
 function setDiff(n){
-  nv = n;
-  [1,2,3].forEach(i => {
-    document.getElementById('afp-d-'+i).className = 'afp-diff' + (i===n ? ' on' : '');
-  });
-  // toggle variable insert buttons
-  document.getElementById('afp-vy').style.display = n >= 2 ? 'inline-flex' : 'none';
-  document.getElementById('afp-vz').style.display = n >= 3 ? 'inline-flex' : 'none';
+  nv = 2;
   nxtQ();
 }
 function nxtQ(){
@@ -835,9 +819,7 @@ function nxtQ(){
   let tries = 0;
   do { Q = genQ(nv); tries++; } while(tries < 8 && !validQ(Q));
   document.getElementById('afp-q').innerHTML = '<span class="afp-math">' + renderE(Q.q) + '</span>';
-  document.getElementById('afp-inst').textContent = mode==='simplify'
-    ? 'Rewrite this expression in any equivalent form — work step-by-step towards the fully simplified result.'
-    : 'Enter as many different equivalent forms of this expression as you can. Each is checked and logged.';
+  document.getElementById('afp-inst').textContent = 'Rewrite the expression. Equivalent rewrites are counted as correct; the most recent try appears at the top.';
   clearEditor();
   document.getElementById('afp-preview-row').style.display = 'none';
   document.getElementById('afp-trial-list').innerHTML = '';
@@ -957,7 +939,7 @@ function addTrial(exprHtml, ok, label){
   const row = document.createElement('div');
   row.className = 'afp-trial ' + (label === 'correct answer' ? 'answer' : (ok ? 'correct' : 'wrong'));
   row.innerHTML = '<span class="afp-math" style="font-size:1.1rem;">' + exprHtml + '</span><span class="mark">' + label + '</span>';
-  list.appendChild(row);
+  list.insertBefore(row, list.firstChild);
   box.style.display = 'block';
 }
 function check(){
@@ -980,7 +962,10 @@ function check(){
     return;
   }
   if(renderE(u) === renderE(Q.q)){
-    addTrial(displayHtml, false, 'original');
+    addTrial(displayHtml, true, 'original');
+    score++; streak++; upd();
+    clearEditor();
+    document.getElementById('afp-input').focus();
     return;
   }
   const renderedU = renderE(u);
@@ -1080,9 +1065,9 @@ window.afp_insertFrac = insertFrac;
 window.afp_insertSym = insertSym;
 window.afp_updatePreview = updatePreview;
 
-// initial setup: hide z button for default nv=2
-document.getElementById('afp-vz').style.display = 'none';
-setMode('simplify');
+// initial setup: generated problems use x and y only.
+mode = 'explore';
+nxtQ();
 })();
 </script>
 
