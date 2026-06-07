@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Algebraic Fraction Practice</title>
+<title>Oefenen met Algebraïsche Breuken</title>
 <style>
 :root {
   --color-text-primary:#1f1f1f;
@@ -47,16 +47,16 @@ body {
 
 .afp-editor{font-size:1.45rem;font-family:var(--font-serif,Georgia,serif);width:100%;border:1px solid var(--color-border-tertiary);background:var(--color-background-primary);outline:none;color:var(--color-text-primary);padding:14px 16px;border-radius:10px;box-sizing:border-box;min-height:66px;line-height:1.6;}
 .afp-editor:focus{border-color:#993C1D;}
-.afp-editor:empty:before{content:attr(data-placeholder);color:var(--color-text-secondary);font-family:var(--font-mono,ui-monospace,monospace);font-size:1rem;}
+.afp-editor:leeg:before{content:attr(data-placeholder);color:var(--color-text-secondary);font-family:var(--font-mono,ui-monospace,monospace);font-size:1rem;}
 .afp-frac-edit{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 4px;line-height:1.1;}
 .afp-frac-edit .num,.afp-frac-edit .den{min-width:28px;min-height:1.2em;padding:1px 8px;text-align:center;outline:0;}
 .afp-frac-edit .bar{display:block;height:1.5px;background:currentColor;width:100%;min-width:100%;align-self:stretch;margin:1px 0;}
 .afp-trial{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:10px;border:1px solid;margin:8px 0;background:var(--color-background-primary);}
 .afp-trial.correct{border-color:#4b9b57;background:var(--color-background-success);color:var(--color-text-success);}
-.afp-trial.wrong{border-color:#b84d4d;background:var(--color-background-danger);color:var(--color-text-danger);}
+.afp-trial.fout{border-color:#b84d4d;background:var(--color-background-danger);color:var(--color-text-danger);}
 .afp-trial .mark{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;}
 .afp-trial.correct{border-color:#2f8f46;background:#e7f6ea;color:#145725;}
-.afp-trial.wrong{border-color:#b84d4d;background:#fde8e8;color:#7a1f1f;}
+.afp-trial.fout{border-color:#b84d4d;background:#fde8e8;color:#7a1f1f;}
 .afp-trial.answer{border-color:#4a90c2;background:#e8f3fb;color:#164b73;}
 
 @media (max-width:760px){.afp-workspace{grid-template-columns:1fr!important;}}
@@ -64,7 +64,7 @@ body {
 </head>
 <body>
 
-<h2 class="sr-only">Algebraic fraction practice — simplify or explore equivalent forms with polynomial expressions</h2>
+<h2 class="sr-only">Algebraic fraction practice — vereenvoudig of onderzoek gelijkwaardige vormen met polynomiale uitdrukkingen</h2>
 
 <style>
 .afp-tab{padding:8px 18px;font-size:13px;border:none;background:transparent;cursor:pointer;color:var(--color-text-secondary);border-bottom:2.5px solid transparent;margin-bottom:-0.5px;font-family:inherit;}
@@ -104,66 +104,69 @@ body {
 
   <!-- Action buttons: placed above generated equation -->
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:0 0 1.25rem;justify-content:center;">
-    <button class="afp-btn primary" onclick="afp_check()">Check</button>
-    <button class="afp-btn secondary" onclick="afp_nxtQ()">New question</button>
-    <button class="afp-btn secondary" onclick="afp_toggleOwnProblem()">Insert own problem</button>
+    <button class="afp-btn primary" onclick="afp_check()">Controleer</button>
+    <button class="afp-btn secondary" onclick="afp_alles()">Alles oefenen</button>
+    <button class="afp-btn secondary" onclick="afp_vereenvoudigen()">Vereenvoudigen</button>
+    <button class="afp-btn secondary" onclick="afp_samenvoegen()">Samenvoegen</button>
+    <button class="afp-btn secondary" onclick="afp_fracInFrac()">Breuk in breuk</button>
+    <button class="afp-btn secondary" onclick="afp_toggleOwnProblem()">Eigen opgave invoeren</button>
     <button class="afp-btn tertiary" onclick="afp_hint()" id="afp-hbtn">Hint</button>
-    <button class="afp-btn tertiary" onclick="afp_showA()">Correct answer</button>
+    <button class="afp-btn tertiary" onclick="afp_showA()">Correct antwoord</button>
   </div>
 
-  <!-- Own problem panel -->
+  <!-- Own opgave panel -->
   <div id="afp-own-panel" style="display:none;margin:0 0 1.25rem;padding:14px;background:var(--color-background-primary);border:1px solid var(--color-border-tertiary);border-radius:10px;">
-    <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">insert your own problem:</p>
-    <div class="afp-editor" id="afp-own-input" contenteditable="true" data-placeholder="type the starting expression, e.g. (4x+8)/4 or (x+1)/(x-1)"></div>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">voer je eigen opgave in:</p>
+    <div class="afp-editor" id="afp-own-input" contenteditable="true" data-placeholder="typ de beginuitdrukking, bv. (4x+8)/4 of (x+1)/(x-1)"></div>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-      <button class="afp-sym" onclick="afp_insertFrac()" title="Insert fraction">
+      <button class="afp-sym" onclick="afp_insertFrac()" title="Breuk invoegen">
         <span class="afp-frac"><span class="num">a</span><span class="bar"></span><span class="den">b</span></span>
       </button>
-      <button class="afp-sym" onclick="afp_insertSym('^2')" title="Square (power of 2)"><i>x</i><sup style="font-size:.7em;">2</sup></button>
-      <button class="afp-sym" onclick="afp_insertSym('*')" title="Multiply">×</button>
-      <button class="afp-sym" onclick="afp_insertSym('/')" title="Divide">/</button>
+      <button class="afp-sym" onclick="afp_insertSym('^2')" title="Kwadrateren (macht 2)"><i>x</i><sup style="font-size:.7em;">2</sup></button>
+      <button class="afp-sym" onclick="afp_insertSym('*')" title="Vermenigvuldigen">×</button>
+      <button class="afp-sym" onclick="afp_insertSym('/')" title="Delen">/</button>
       <button class="afp-sym" onclick="afp_insertSym('+')" title="Plus">+</button>
-      <button class="afp-sym" onclick="afp_insertSym('-')" title="Minus">−</button>
-      <button class="afp-sym" onclick="afp_insertSym('(')" title="Open parenthesis">(</button>
-      <button class="afp-sym" onclick="afp_insertSym(')')" title="Close parenthesis">)</button>
+      <button class="afp-sym" onclick="afp_insertSym('-')" title="Min">−</button>
+      <button class="afp-sym" onclick="afp_insertSym('(')" title="Open haakje">(</button>
+      <button class="afp-sym" onclick="afp_insertSym(')')" title="Sluit haakje">)</button>
       <button class="afp-sym" onclick="afp_insertSym('x')" title="x"><i>x</i></button>
       <button class="afp-sym" onclick="afp_insertSym('y')" title="y"><i>y</i></button>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-      <button class="afp-btn primary" onclick="afp_setOwnProblem()">Use this problem</button>
-      <button class="afp-btn secondary" onclick="afp_clearOwnProblem()">Clear</button>
-      <button class="afp-btn tertiary" onclick="afp_toggleOwnProblem(false)">Close</button>
+      <button class="afp-btn primary" onclick="afp_setOwnProblem()">Gebruik deze opgave</button>
+      <button class="afp-btn secondary" onclick="afp_clearOwnProblem()">Wissen</button>
+      <button class="afp-btn tertiary" onclick="afp_toggleOwnProblem(false)">Sluiten</button>
     </div>
     <p id="afp-own-error" style="display:none;font-size:12px;color:#7a1f1f;margin:10px 0 0;"></p>
   </div>
 
   <div class="afp-workspace" style="display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,1fr);gap:16px;align-items:start;margin-bottom:1rem;">
     <div>
-      <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">problem</p>
+      <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">opgave</p>
       <div id="afp-q" class="afp-qcard" style="height:auto;min-height:160px;overflow-wrap:anywhere;"></div>
     </div>
     <div>
-      <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">your rewrite</p>
-      <div class="afp-editor" id="afp-input" contenteditable="true" data-placeholder="enter your equivalent form"
+      <p style="font-size:12px;color:var(--color-text-secondary);margin:0 0 8px;font-weight:500;">jouw herschrijving</p>
+      <div class="afp-editor" id="afp-input" contenteditable="true" data-placeholder="voer een gelijkwaardige vorm in"
         spellcheck="false" onkeydown="if(event.key==='Enter'){event.preventDefault();afp_check();}" oninput="afp_updatePreview()" style="min-height:160px;"></div>
     </div>
   </div>
 
   <!-- Symbol insert buttons -->
   <div id="afp-symbol-row" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center;">
-    <button class="afp-sym" onclick="afp_insertFrac()" title="Insert fraction">
+    <button class="afp-sym" onclick="afp_insertFrac()" title="Breuk invoegen">
       <span class="afp-frac"><span class="num">a</span><span class="bar"></span><span class="den">b</span></span>
     </button>
-    <button class="afp-sym" onclick="afp_insertSym('^2')" title="Square (power of 2)"><i>x</i><sup style="font-size:.7em;">2</sup></button>
-    <button class="afp-sym" onclick="afp_insertSym('*')" title="Multiply">×</button>
-    <button class="afp-sym" onclick="afp_insertSym('/')" title="Divide">/</button>
+    <button class="afp-sym" onclick="afp_insertSym('^2')" title="Kwadrateren (macht 2)"><i>x</i><sup style="font-size:.7em;">2</sup></button>
+    <button class="afp-sym" onclick="afp_insertSym('*')" title="Vermenigvuldigen">×</button>
+    <button class="afp-sym" onclick="afp_insertSym('/')" title="Delen">/</button>
     <button class="afp-sym" onclick="afp_insertSym('+')" title="Plus">+</button>
-    <button class="afp-sym" onclick="afp_insertSym('-')" title="Minus">−</button>
-    <button class="afp-sym" onclick="afp_insertSym('(')" title="Open parenthesis">(</button>
-    <button class="afp-sym" onclick="afp_insertSym(')')" title="Close parenthesis">)</button>
+    <button class="afp-sym" onclick="afp_insertSym('-')" title="Min">−</button>
+    <button class="afp-sym" onclick="afp_insertSym('(')" title="Open haakje">(</button>
+    <button class="afp-sym" onclick="afp_insertSym(')')" title="Sluit haakje">)</button>
     <button class="afp-sym" id="afp-vx" onclick="afp_insertSym('x')" title="x"><i>x</i></button>
     <button class="afp-sym" id="afp-vy" onclick="afp_insertSym('y')" title="y"><i>y</i></button>
-    <button class="afp-btn secondary" onclick="afp_resetInput()" style="height:46px;">Reset input</button>
+    <button class="afp-btn secondary" onclick="afp_resetInput()" style="height:46px;">Invoer wissen</button>
   </div>
 
   <script>
@@ -797,10 +800,54 @@ function genQ(nv){
 
 // === state ===
 let mode = 'explore';
+let forceFracInFrac = false;
+let questionMode = 'all';
 let nv = 2;
 let Q = null;
 let score = 0, streak = 0;
 let found = [];
+
+
+function genFracInFracQ(){
+  // Force questions where either numerator OR denominator contains a fraction.
+  if(Math.random()<0.5){
+    const inner = Frac(Mono(ri(1,4),1), Mono(ri(2,5)));
+    return {
+      q: Frac(inner, Mono(ri(2,5))),
+      s: normalize(Frac(inner, Mono(ri(2,5))))
+    };
+  } else {
+    const inner = Frac(Mono(ri(1,4),1), Mono(ri(2,5)));
+    return {
+      q: Frac(Mono(ri(1,4)), inner),
+      s: normalize(Frac(Mono(ri(1,4)), inner))
+    };
+  }
+}
+
+function afp_fracInFrac(){
+  forceFracInFrac = true;
+  nxtQ();
+}
+
+
+function genSimplifyQ(){
+  return genQ(2); // bestaande vereenvoudig-opgaven (één breuk) uit de generator
+}
+
+function genCombineQ(){
+  const a = ri(1,4), b = ri(1,4);
+  const d1 = Mono(choice([1,2,3]),1,0,0);
+  const d2 = Mono(choice([1,2,3]),0,1,0);
+  return {
+    q:{t:'O',op:'+',a:Frac(Poly([Mono(a,1),Mono(1)]),d1),b:Frac(Poly([Mono(b,1),Mono(-1)]),d2)},
+    s:normalize({t:'O',op:'+',a:Frac(Poly([Mono(a,1),Mono(1)]),d1),b:Frac(Poly([Mono(b,1),Mono(-1)]),d2)})
+  };
+}
+
+function afp_alles(){ questionMode='all'; nxtQ(); }
+function afp_vereenvoudigen(){ questionMode='simplify'; nxtQ(); }
+function afp_samenvoegen(){ questionMode='combine'; nxtQ(); }
 
 // === UI ===
 function setMode(m){
@@ -814,9 +861,16 @@ function setDiff(n){
 function nxtQ(){
   found = [];
   let tries = 0;
-  do { Q = genQ(nv); tries++; } while(tries < 8 && !validQ(Q));
+  do {
+    if(forceFracInFrac || questionMode==='complex') Q = genFracInFracQ();
+    else if(questionMode==='simplify') Q = genSimplifyQ();
+    else if(questionMode==='combine') Q = genCombineQ();
+    else Q = genQ(nv);
+    tries++;
+  } while(tries < 8 && !validQ(Q));
+  forceFracInFrac = false;
   document.getElementById('afp-q').innerHTML = '<span class="afp-math">' + renderE(Q.q) + '</span>';
-  document.getElementById('afp-inst').textContent = 'Rewrite the expression. Equivalent rewrites are counted as correct; the most recent try appears at the top.';
+  document.getElementById('afp-inst').textContent = 'Herschrijf de uitdrukking. Gelijkwaardige herschrijvingen worden als correct geteld; de meest recente poging staat bovenaan.';
   clearEditor();
   document.getElementById('afp-preview-row').style.display = 'none';
   document.getElementById('afp-trial-list').innerHTML = '';
@@ -931,7 +985,7 @@ function addTrial(exprHtml, ok, label){
   const box = document.getElementById('afp-trials');
   const list = document.getElementById('afp-trial-list');
   const row = document.createElement('div');
-  row.className = 'afp-trial ' + (label === 'correct answer' ? 'answer' : (ok ? 'correct' : 'wrong'));
+  row.className = 'afp-trial ' + (label === 'correct answer' ? 'answer' : (ok ? 'correct' : 'fout'));
   row.innerHTML = '<span class="afp-math" style="font-size:1.1rem;">' + exprHtml + '</span><span class="mark">' + label + '</span>';
   list.insertBefore(row, list.firstChild);
   box.style.display = 'block';
@@ -941,22 +995,22 @@ function check(){
   const raw = getEditorRaw().trim();
   const displayHtml = getEditorDisplayHtml();
   if(!raw){
-    addTrial('Please enter an expression.', false, 'empty');
+    addTrial('Voer een uitdrukking in.', false, 'leeg');
     return;
   }
   const u = parseInput(raw);
   if(!u){
-    addTrial(displayHtml, false, 'not parsed');
+    addTrial(displayHtml, false, 'niet herkend');
     streak = 0; upd();
     return;
   }
   if(!equiv(u, Q.q)){
-    addTrial(displayHtml, false, 'wrong');
+    addTrial(displayHtml, false, 'fout');
     streak = 0; upd();
     return;
   }
   if(renderE(u) === renderE(Q.q)){
-    addTrial(displayHtml, true, 'original');
+    addTrial(displayHtml, true, 'origineel');
     score++; streak++; upd();
     clearEditor();
     document.getElementById('afp-input').focus();
@@ -964,12 +1018,12 @@ function check(){
   }
   const renderedU = renderE(u);
   if(found.some(f => renderE(f) === renderedU)){
-    addTrial(displayHtml, true, 'repeat');
+    addTrial(displayHtml, true, 'herhaling');
     return;
   }
   const sim = isSimplified(u);
   found.push(u);
-  addTrial(displayHtml, true, sim ? 'correct, simplified' : 'correct');
+  addTrial(displayHtml, true, sim ? 'correct, vereenvoudigd' : 'correct');
   score++; streak++; upd();
   clearEditor();
   document.getElementById('afp-input').focus();
@@ -981,7 +1035,7 @@ function hint(){
   } else if(Q.q.t === 'F' && isPoly(Q.q.n) && isPoly(Q.q.d)){
     const c = commonFactor(Q.q.n, Q.q.d);
     if(c.c !== 1 || c.x || c.y || c.z){
-      showFb(`Hint: numerator and denominator share a common factor of <span class="afp-math">${monoH(c, false)}</span>. Divide both by it.`, 'info');
+      showFb(`Hint: numerator and denominator share a common factor of <span class="afp-math">${monoH(c, false)}</span>. Delen both by it.`, 'info');
     } else {
       showFb('Hint: this expression is already in a simple form.', 'info');
     }
@@ -1021,13 +1075,13 @@ function setOwnProblem(){
   const raw = ownProblemRaw();
   const err = document.getElementById('afp-own-error');
   if(!raw){
-    err.textContent = 'Please type an expression first.';
+    err.textContent = 'Typ eerst een uitdrukking.';
     err.style.display = 'block';
     return;
   }
   const parsed = parseInput(raw);
   if(!parsed){
-    err.textContent = 'I could not parse this expression. Try typing directly, using /, or using the fraction button.';
+    err.textContent = 'Ik kon deze uitdrukking niet verwerken. Probeer rechtstreeks te typen, gebruik / of de breukknop.';
     err.style.display = 'block';
     return;
   }
@@ -1035,7 +1089,7 @@ function setOwnProblem(){
   Q = { q: parsed, s: simplifiedCandidate || parsed, own: true };
   found = [];
   document.getElementById('afp-q').innerHTML = '<span class="afp-math">' + renderE(Q.q) + '</span>';
-  document.getElementById('afp-inst').textContent = 'Own problem: rewrite this expression in an equivalent form.';
+  document.getElementById('afp-inst').textContent = 'Own opgave: rewrite this expression in an equivalent form.';
   clearEditor();
   document.getElementById('afp-trial-list').innerHTML = '';
   document.getElementById('afp-trials').style.display = 'none';
@@ -1048,6 +1102,10 @@ function setOwnProblem(){
 window.afp_setMode = setMode;
 window.afp_setDiff = setDiff;
 window.afp_nxtQ = nxtQ;
+window.afp_fracInFrac = function(){ questionMode='complex'; afp_fracInFrac(); };
+window.afp_alles = afp_alles;
+window.afp_vereenvoudigen = afp_vereenvoudigen;
+window.afp_samenvoegen = afp_samenvoegen;
 window.afp_toggleOwnProblem = toggleOwnProblem;
 window.afp_clearOwnProblem = clearOwnProblem;
 window.afp_setOwnProblem = setOwnProblem;
@@ -1059,7 +1117,7 @@ window.afp_insertFrac = insertFrac;
 window.afp_insertSym = insertSym;
 window.afp_updatePreview = updatePreview;
 
-// initial setup: generated problems use x and y only.
+// initial setup: generated opgaves use x and y only.
 mode = 'explore';
 nxtQ();
 })();
